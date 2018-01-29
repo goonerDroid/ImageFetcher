@@ -6,6 +6,7 @@ import android.os.Looper;
 
 import com.sublime.imagefetcher.BuildConfig;
 import com.sublime.imagefetcher.app.ImageFetcher;
+import com.sublime.imagefetcher.model.Photos;
 import com.sublime.imagefetcher.utils.AppConstants;
 import com.sublime.imagefetcher.utils.AppUtils;
 import com.sublime.imagefetcher.utils.Timber;
@@ -26,6 +27,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by goonerDroid on 03-06-2016.
@@ -78,6 +80,7 @@ public class APIRequest {
         OkHttpClient client = b.build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(AppConstants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(new ErrorHandlingCallAdapterFactory())
                 .client(client)
                 .build();
@@ -146,7 +149,11 @@ public class APIRequest {
         };
     }
 
-
+    public void fetchImageList(int perPageCount, int pageCount, final OnRequestComplete onRequestComplete) {
+        RetrofitCall<Photos> call = apiService.getImageList(AppConstants.API_KEY,String.valueOf(perPageCount),
+                String.valueOf(pageCount),AppConstants.FORMAT_TYPE,AppConstants.NO_JSON_CALLBACK);
+        enqueueCall(call, onRequestComplete);
+    }
 
 
     private void enqueueCall(RetrofitCall<?> retrofitCall,
