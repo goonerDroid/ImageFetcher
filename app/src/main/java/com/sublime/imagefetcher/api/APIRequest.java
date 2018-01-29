@@ -6,7 +6,7 @@ import android.os.Looper;
 
 import com.sublime.imagefetcher.BuildConfig;
 import com.sublime.imagefetcher.app.ImageFetcher;
-import com.sublime.imagefetcher.model.Photos;
+import com.sublime.imagefetcher.model.ImageResponse;
 import com.sublime.imagefetcher.utils.AppConstants;
 import com.sublime.imagefetcher.utils.AppUtils;
 import com.sublime.imagefetcher.utils.Timber;
@@ -150,7 +150,7 @@ public class APIRequest {
     }
 
     public void fetchImageList(int perPageCount, int pageCount, final OnRequestComplete onRequestComplete) {
-        RetrofitCall<Photos> call = apiService.getImageList(AppConstants.API_KEY,String.valueOf(perPageCount),
+        RetrofitCall<ImageResponse> call = apiService.getImageList(AppConstants.API_KEY,String.valueOf(perPageCount),
                 String.valueOf(pageCount),AppConstants.FORMAT_TYPE,AppConstants.NO_JSON_CALLBACK);
         enqueueCall(call, onRequestComplete);
     }
