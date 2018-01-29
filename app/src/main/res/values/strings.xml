@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ImageFetcher</string>
     <string name="search_images">Search images</string>
+    <string name="setting_string">Settings</string>
 </resources>

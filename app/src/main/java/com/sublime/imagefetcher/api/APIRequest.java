@@ -30,7 +30,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Created by goonerDroid on 03-06-2016.
+ * Created by goonerDroid
+ * on 29-01-2018.
  */
 public class APIRequest {
     private static APIRequest instance;

@@ -1,4 +1,4 @@
-package com.sublime.imagefetcher;
+package com.sublime.imagefetcher.widgets;
 
 import android.content.Context;
 import android.graphics.Rect;

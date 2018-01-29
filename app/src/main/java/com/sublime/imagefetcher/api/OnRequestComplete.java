@@ -1,9 +1,8 @@
 package com.sublime.imagefetcher.api;
 
 /**
- * Created by bhushan on 3/12/15.
- *
- * @author Bhushan
+ * Created by goonerDroid
+ * on 29-01-2018.
  */
 public interface OnRequestComplete {
 
