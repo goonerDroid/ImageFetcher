@@ -31,7 +31,7 @@ public class PhotoItemAdapter extends RecyclerView.Adapter<PhotoItemAdapter.Item
     }
 
     void addItems(List<Photo> dataList) {
-        if (photosList != null) photosList.addAll(dataList);
+        photosList.addAll(dataList);
         this.notifyDataSetChanged();
     }
 

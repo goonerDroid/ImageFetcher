@@ -32,6 +32,7 @@ public class ImageListActivity extends AppCompatActivity {
     ProgressBar progressBar;
 
     private static final int DEFAULT_PAGE_COUNT = 1;
+    private static final int TOTAL_IMAGE_COUNT = 30;
     private  PhotoItemAdapter mItemAdapter;
 
     @Override
@@ -51,7 +52,6 @@ public class ImageListActivity extends AppCompatActivity {
     private void initView() {
         //init loading indicator.
         FoldingCube foldingCube = new FoldingCube();
-        foldingCube.setBounds(0, 0, 50, 50);
         foldingCube.setColor(getResources().getColor(R.color.colorAccent));
         progressBar.setIndeterminateDrawable(foldingCube);
 
@@ -67,8 +67,12 @@ public class ImageListActivity extends AppCompatActivity {
         EndlessRecyclerViewScrollListener scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                page++;
-                fetchImages(page);
+                if (totalItemsCount >= TOTAL_IMAGE_COUNT){
+                    Toast.makeText(ImageListActivity.this,"That's all folks!",Toast.LENGTH_SHORT).show();
+                }else {
+                    page++;
+                    fetchImages(page);
+                }
             }
         };
         // Adds the scroll listener to RecyclerView
@@ -77,8 +81,6 @@ public class ImageListActivity extends AppCompatActivity {
 
     private void fetchImages(int pageCount) {
         if (new AppUtils(this).isInternetConnected()) {
-            progressBar.setVisibility(View.VISIBLE);
-            recyclerView.setVisibility(View.INVISIBLE);
             APIRequest apiRequest = APIRequest.init();
             apiRequest.fetchImageList(AppConstants.PER_PAGE_COUNT, pageCount, new OnRequestComplete() {
                 @Override
@@ -86,8 +88,14 @@ public class ImageListActivity extends AppCompatActivity {
                     progressBar.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
                     ImageResponse imageResponse = (ImageResponse) object;
-                    if (imageResponse != null)
+                    if (imageResponse != null && imageResponse.getStatus().equalsIgnoreCase(AppConstants.RESPONSE_STATUS)) {
                         mItemAdapter.addItems(imageResponse.getPhotos().getPhotoList());
+                    }else {
+                        progressBar.setVisibility(View.GONE);
+                        recyclerView.setVisibility(View.INVISIBLE);
+                        String errorMssg = AppConstants.SERVER_ERROR_MSG;
+                        Toast.makeText(ImageListActivity.this, errorMssg, Toast.LENGTH_LONG).show();
+                    }
                 }
 
                 @Override
@@ -103,8 +111,6 @@ public class ImageListActivity extends AppCompatActivity {
             });
         }else{
             progressBar.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.INVISIBLE);
-
             //Displays snackbar with action if no network present
             Snackbar snackbar = Snackbar.make(findViewById(R.id.container),AppConstants.NETWORK_ERROR_MSG,
                     Snackbar.LENGTH_LONG);
