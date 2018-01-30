@@ -16,13 +16,19 @@ import com.sublime.imagefetcher.api.APIError;
 import com.sublime.imagefetcher.api.APIRequest;
 import com.sublime.imagefetcher.api.OnRequestComplete;
 import com.sublime.imagefetcher.model.ImageResponse;
+import com.sublime.imagefetcher.model.Photo;
 import com.sublime.imagefetcher.utils.AppConstants;
 import com.sublime.imagefetcher.utils.AppUtils;
 import com.sublime.imagefetcher.widgets.EndlessRecyclerViewScrollListener;
 import com.sublime.imagefetcher.widgets.ItemOffsetDecoration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnTextChanged;
+import butterknife.OnTouch;
 
 public class ImageListActivity extends AppCompatActivity {
 
@@ -34,6 +40,8 @@ public class ImageListActivity extends AppCompatActivity {
     private static final int DEFAULT_PAGE_COUNT = 1;
     private static final int TOTAL_IMAGE_COUNT = 30;
     private  PhotoItemAdapter mItemAdapter;
+    private List<Photo> originalPhotosList = new ArrayList<>();
+    private List<Photo> searchPhotosList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,12 +49,13 @@ public class ImageListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_list);
         ButterKnife.bind(this);
         initView();
+        fetchImages(DEFAULT_PAGE_COUNT);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        fetchImages(DEFAULT_PAGE_COUNT);
+
     }
 
     private void initView() {
@@ -89,7 +98,8 @@ public class ImageListActivity extends AppCompatActivity {
                     recyclerView.setVisibility(View.VISIBLE);
                     ImageResponse imageResponse = (ImageResponse) object;
                     if (imageResponse != null && imageResponse.getStatus().equalsIgnoreCase(AppConstants.RESPONSE_STATUS)) {
-                        mItemAdapter.addItems(imageResponse.getPhotos().getPhotoList());
+                        originalPhotosList.addAll(imageResponse.getPhotos().getPhotoList());
+                        mItemAdapter.addItems(imageResponse.getPhotos().getPhotoList(),false);
                     }else {
                         progressBar.setVisibility(View.GONE);
                         recyclerView.setVisibility(View.INVISIBLE);
@@ -122,5 +132,30 @@ public class ImageListActivity extends AppCompatActivity {
             });
             snackbar.show();
         }
+    }
+
+    @OnTextChanged(value = R.id.et_search, callback = OnTextChanged.Callback.TEXT_CHANGED)
+    public void onSearch(CharSequence sequence){
+        if (sequence.toString().length() > 2){
+            for (Photo photo : originalPhotosList){
+                if (photo.getTitle() != null && photo.getTitle().toLowerCase().contains(sequence.toString().toLowerCase())){
+                    searchPhotosList.clear();
+                    searchPhotosList.add(photo);
+                }
+            }
+            mItemAdapter.addItems(searchPhotosList,true);
+        }
+
+        if (sequence.toString().length() <2){
+            searchPhotosList.clear();
+            mItemAdapter.addItems(originalPhotosList,true);
+        }
+    }
+
+    //-- Hides keyboard on scroll
+    @OnTouch(R.id.recyclerView)
+    public boolean onRecyclerTouch(View view){
+        AppUtils.hideKeyboard(ImageListActivity.this,view);
+        return false;
     }
 }

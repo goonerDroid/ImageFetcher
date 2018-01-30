@@ -30,7 +30,8 @@ public class PhotoItemAdapter extends RecyclerView.Adapter<PhotoItemAdapter.Item
         requestManager = glideRequestManager;
     }
 
-    void addItems(List<Photo> dataList) {
+    void addItems(List<Photo> dataList,boolean clearData) {
+        if (clearData) photosList.clear();
         photosList.addAll(dataList);
         this.notifyDataSetChanged();
     }
