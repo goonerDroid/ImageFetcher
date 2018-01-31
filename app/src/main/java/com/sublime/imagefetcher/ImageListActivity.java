@@ -19,6 +19,7 @@ import com.sublime.imagefetcher.model.ImageResponse;
 import com.sublime.imagefetcher.model.Photo;
 import com.sublime.imagefetcher.utils.AppConstants;
 import com.sublime.imagefetcher.utils.AppUtils;
+import com.sublime.imagefetcher.utils.Timber;
 import com.sublime.imagefetcher.widgets.EndlessRecyclerViewScrollListener;
 import com.sublime.imagefetcher.widgets.ItemOffsetDecoration;
 
@@ -38,10 +39,11 @@ public class ImageListActivity extends AppCompatActivity {
     ProgressBar progressBar;
 
     private static final int DEFAULT_PAGE_COUNT = 1;
-    private static final int TOTAL_IMAGE_COUNT = 30;
+    private static final int TOTAL_IMAGE_COUNT = 30;//Value set according to problem statement.
     private  PhotoItemAdapter mItemAdapter;
     private List<Photo> originalPhotosList = new ArrayList<>();
     private List<Photo> searchPhotosList = new ArrayList<>();
+    private EndlessRecyclerViewScrollListener scrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +75,10 @@ public class ImageListActivity extends AppCompatActivity {
         recyclerView.hasFixedSize();
         mItemAdapter = new PhotoItemAdapter(Glide.with(this));
         recyclerView.setAdapter(mItemAdapter);
-        EndlessRecyclerViewScrollListener scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
+        scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                Timber.wtf("onLoad more called");
                 if (totalItemsCount >= TOTAL_IMAGE_COUNT){
                     Toast.makeText(ImageListActivity.this,"That's all folks!",Toast.LENGTH_SHORT).show();
                 }else {
@@ -143,12 +146,14 @@ public class ImageListActivity extends AppCompatActivity {
                     searchPhotosList.add(photo);
                 }
             }
+            recyclerView.clearOnScrollListeners();
             mItemAdapter.addItems(searchPhotosList,true);
         }
 
-        if (sequence.toString().length() <2){
+        if (sequence.toString().length() < 2){
             searchPhotosList.clear();
             mItemAdapter.addItems(originalPhotosList,true);
+            recyclerView.addOnScrollListener(scrollListener);
         }
     }
 
