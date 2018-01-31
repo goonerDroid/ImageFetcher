@@ -59,6 +59,11 @@ public class ImageListActivity extends AppCompatActivity {
         fetchImages(DEFAULT_PAGE_COUNT);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        fetchImages(DEFAULT_PAGE_COUNT);//fetches data after connecting to internet if user navigates through settings.
+    }
 
     private void initView() {
         //init loading indicator.
@@ -88,7 +93,6 @@ public class ImageListActivity extends AppCompatActivity {
                 }
             }
         };
-        // Adds the scroll listener to RecyclerView
         recyclerView.addOnScrollListener(scrollListener);
 
     }
