@@ -1,4 +1,4 @@
-package com.sublime.imagefetcher;
+package com.sublime.imagefetcher.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
+import com.sublime.imagefetcher.R;
 import com.sublime.imagefetcher.model.Photo;
 
 import java.util.ArrayList;
@@ -26,12 +27,17 @@ public class PhotoItemAdapter extends RecyclerView.Adapter<PhotoItemAdapter.Item
     private List<Photo> photosList = new ArrayList<>();
     private RequestManager requestManager;
 
-    PhotoItemAdapter(RequestManager glideRequestManager) {
+    public PhotoItemAdapter(RequestManager glideRequestManager) {
         requestManager = glideRequestManager;
     }
 
-    void addItems(List<Photo> dataList,boolean clearData) {
-        if (clearData) photosList.clear();
+    public void addItems(List<Photo> dataList) {
+        photosList.addAll(dataList);
+        this.notifyItemRangeChanged(getItemCount(),photosList.size() - 1);
+    }
+
+    public void notifyDataChanged(List<Photo> dataList){
+        photosList.clear();
         photosList.addAll(dataList);
         this.notifyDataSetChanged();
     }
@@ -72,18 +78,9 @@ public class PhotoItemAdapter extends RecyclerView.Adapter<PhotoItemAdapter.Item
         @BindView(R.id.tv_photo_name)
         TextView tvPhotoName;
 
-
         ItemViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
-
-//        void bindContainerClickListener(final Accommodation accommodation) {
-//            llAccommodationContainer.setOnClickListener(new View.OnClickListener() {
-//                @Override public void onClick(View view) {
-//                    onExploreClickListener.onExploreClick(view, accommodation, AppConstants.TYPE_ACCOMMODATION);
-//                }
-//            });
-//        }
     }
 }

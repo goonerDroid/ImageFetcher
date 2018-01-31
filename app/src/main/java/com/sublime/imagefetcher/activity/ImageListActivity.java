@@ -1,4 +1,4 @@
-package com.sublime.imagefetcher;
+package com.sublime.imagefetcher.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.github.ybq.android.spinkit.style.FoldingCube;
+import com.sublime.imagefetcher.adapter.PhotoItemAdapter;
+import com.sublime.imagefetcher.R;
 import com.sublime.imagefetcher.api.APIError;
 import com.sublime.imagefetcher.api.APIRequest;
 import com.sublime.imagefetcher.api.OnRequestComplete;
@@ -33,17 +35,20 @@ import butterknife.OnTouch;
 
 public class ImageListActivity extends AppCompatActivity {
 
+    private static final int MIN_CHARACTER_COUNT = 2;
+    private static final int DEFAULT_PAGE_COUNT = 1;
+    private static final int TOTAL_IMAGE_COUNT = 30;//Value set according to problem statement.
+
+    private PhotoItemAdapter mItemAdapter;
+    private List<Photo> originalPhotosList = new ArrayList<>();
+    private List<Photo> searchPhotosList = new ArrayList<>();
+    private EndlessRecyclerViewScrollListener scrollListener;
+
+
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     @BindView(R.id.progressBar)
     ProgressBar progressBar;
-
-    private static final int DEFAULT_PAGE_COUNT = 1;
-    private static final int TOTAL_IMAGE_COUNT = 30;//Value set according to problem statement.
-    private  PhotoItemAdapter mItemAdapter;
-    private List<Photo> originalPhotosList = new ArrayList<>();
-    private List<Photo> searchPhotosList = new ArrayList<>();
-    private EndlessRecyclerViewScrollListener scrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +59,6 @@ public class ImageListActivity extends AppCompatActivity {
         fetchImages(DEFAULT_PAGE_COUNT);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-    }
 
     private void initView() {
         //init loading indicator.
@@ -75,6 +75,7 @@ public class ImageListActivity extends AppCompatActivity {
         recyclerView.hasFixedSize();
         mItemAdapter = new PhotoItemAdapter(Glide.with(this));
         recyclerView.setAdapter(mItemAdapter);
+
         scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
@@ -89,6 +90,7 @@ public class ImageListActivity extends AppCompatActivity {
         };
         // Adds the scroll listener to RecyclerView
         recyclerView.addOnScrollListener(scrollListener);
+
     }
 
     private void fetchImages(int pageCount) {
@@ -102,7 +104,7 @@ public class ImageListActivity extends AppCompatActivity {
                     ImageResponse imageResponse = (ImageResponse) object;
                     if (imageResponse != null && imageResponse.getStatus().equalsIgnoreCase(AppConstants.RESPONSE_STATUS)) {
                         originalPhotosList.addAll(imageResponse.getPhotos().getPhotoList());
-                        mItemAdapter.addItems(imageResponse.getPhotos().getPhotoList(),false);
+                        mItemAdapter.addItems(imageResponse.getPhotos().getPhotoList());
                     }else {
                         progressBar.setVisibility(View.GONE);
                         recyclerView.setVisibility(View.INVISIBLE);
@@ -139,7 +141,13 @@ public class ImageListActivity extends AppCompatActivity {
 
     @OnTextChanged(value = R.id.et_search, callback = OnTextChanged.Callback.TEXT_CHANGED)
     public void onSearch(CharSequence sequence){
-        if (sequence.toString().length() > 2){
+        if (sequence.toString().length() == 0){
+            AppUtils.hideKeyboard(ImageListActivity.this,recyclerView);//gives a standard view.
+        } else if (sequence.toString().length() < MIN_CHARACTER_COUNT){
+            searchPhotosList.clear();
+            mItemAdapter.notifyDataChanged(originalPhotosList);
+            recyclerView.addOnScrollListener(scrollListener);
+        }else if (sequence.toString().length() > MIN_CHARACTER_COUNT){
             for (Photo photo : originalPhotosList){
                 if (photo.getTitle() != null && photo.getTitle().toLowerCase().contains(sequence.toString().toLowerCase())){
                     searchPhotosList.clear();
@@ -147,13 +155,7 @@ public class ImageListActivity extends AppCompatActivity {
                 }
             }
             recyclerView.clearOnScrollListeners();
-            mItemAdapter.addItems(searchPhotosList,true);
-        }
-
-        if (sequence.toString().length() < 2){
-            searchPhotosList.clear();
-            mItemAdapter.addItems(originalPhotosList,true);
-            recyclerView.addOnScrollListener(scrollListener);
+            mItemAdapter.notifyDataChanged(searchPhotosList);
         }
     }
 
